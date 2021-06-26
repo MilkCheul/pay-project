@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0.25
+    cap_add:
+      - SYS_NICE
+    environment:
+      MYSQL_ROOT_PASSWORD: "pass"
+      MYSQL_DATABASE: "pay"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      TZ: "Asia/Seoul"
+    volumes:
+      - "./init/:/docker-entrypoint-initdb.d/"
+    ports:
+      - 8089:3306
+    container_name: pay_mysql
+
+  redis:
+    image: redis:5.0.5
+    command: redis-server --port 6379 --maxmemory 1gb --maxmemory-policy allkeys-lru
+    labels:
+      - "name=pay_redis"
+      - "mode=standalone"
+    ports:
+      - 8090:6379
+    container_name: pay_redis

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.pay.investment.mapper.InvestmentProductMapper">
+    <select id="selectAvailableInvestmentProducts" resultType="com.example.pay.investment.model.InvestmentProduct">
+        SELECT product.product_id AS productId
+             , product.title AS title
+             , product.total_investing_amount AS totalInvestingAmount
+             , (SELECT COALESCE(SUM(investing_amount), 0) FROM user_investment WHERE product_id = product.product_id) AS presentInvestingAmount
+             , (SELECT COUNT(*) FROM user_investment a WHERE product.product_id = a.product_id) AS investorCount
+             , CASE WHEN product.total_investing_amount = (SELECT COALESCE(SUM(investing_amount), 0) FROM user_investment b WHERE product.product_id = b.product_id)
+                    THEN 'RECRUITMENT_COMPLETED'
+                    ELSE 'RECRUITING'
+                END AS investmentState
+             , product.started_at AS startedAt
+             , product.finished_at AS finishedAt
+          FROM investment_product product
+         WHERE NOW() BETWEEN product.started_at and product.finished_at
+    </select>
+
+    <select id="selectAvailableProductInfo" resultType="com.example.pay.investment.model.ProductInfo" parameterType="int">
+        SELECT product_id AS productId
+             , total_investing_amount AS totalInvestingAmount
+             , total_investing_amount - (SELECT COALESCE(SUM(investing_amount), 0) FROM user_investment WHERE product_id = #{productId}) AS restInvestingAmount
+             , finished_at AS finishedAt
+          FROM investment_product
+         WHERE product_id = #{productId}
+           AND NOW() BETWEEN started_at and finished_at
+    </select>
+
+    <insert id="insertUserInvestment" parameterType="com.example.pay.investment.model.UserInvestment">
+        INSERT INTO user_investment
+        (
+          user_id
+        , product_id
+        , investing_amount
+        , invested_at
+        )
+        VALUES
+        (
+          #{userId}
+        , #{productId}
+        , #{investingAmount}
+        , NOW()
+        )
+    </insert>
+
+    <select id="selectUserInvestments" parameterType="int" resultType="com.example.pay.investment.model.UserInvestment">
+        SELECT a.product_id AS productId
+             , b.title AS title
+             , b.total_investing_amount AS totalInvestingAmount
+             , a.investing_amount AS investingAmount
+             , a.invested_at AS investedAt
+          FROM user_investment a
+    INNER JOIN investment_product b
+            ON a.product_id = b.product_id
+         WHERE a.user_id = #{userId}
+    </select>
+</mapper>
