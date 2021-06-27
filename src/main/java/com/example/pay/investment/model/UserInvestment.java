@@ -1,7 +1,3 @@
-/**
- * Copyright 2021 Naver Corp. All rights Reserved.
- * Naver PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- */
 package com.example.pay.investment.model;
 
 import java.time.LocalDateTime;
@@ -9,7 +5,10 @@ import java.time.LocalDateTime;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class UserInvestment {
+	@JsonIgnore
 	private int userId;
 	@NotNull(message = "productId can not be null")
 	private Integer productId;

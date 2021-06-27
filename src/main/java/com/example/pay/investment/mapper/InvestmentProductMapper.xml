@@ -14,7 +14,9 @@
              , product.started_at AS startedAt
              , product.finished_at AS finishedAt
           FROM investment_product product
-         WHERE NOW() BETWEEN product.started_at and product.finished_at
+         WHERE product.started_at &lt;= NOW()
+           AND product.finished_at >= NOW()
+         ORDER BY product.finished_at DESC
     </select>
 
     <select id="selectAvailableProductInfo" resultType="com.example.pay.investment.model.ProductInfo" parameterType="int">
@@ -24,7 +26,8 @@
              , finished_at AS finishedAt
           FROM investment_product
          WHERE product_id = #{productId}
-           AND NOW() BETWEEN started_at and finished_at
+           AND started_at &lt;= NOW()
+           AND finished_at >= NOW()
     </select>
 
     <insert id="insertUserInvestment" parameterType="com.example.pay.investment.model.UserInvestment">
@@ -54,5 +57,6 @@
     INNER JOIN investment_product b
             ON a.product_id = b.product_id
          WHERE a.user_id = #{userId}
+         ORDER BY a.invested_at DESC
     </select>
 </mapper>
